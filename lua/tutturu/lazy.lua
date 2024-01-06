@@ -24,7 +24,7 @@ require("lazy").setup({
             vim.cmd('colorscheme kanagawa')
         end
     },
-    { "nvim-treesitter/nvim-treesitter",  build = ":TSUpdate" },
+    { "nvim-treesitter/nvim-treesitter",           build = ":TSUpdate" },
     {
         'nvim-lualine/lualine.nvim',
         dependencies = { 'nvim-tree/nvim-web-devicons', opt = true },
@@ -61,8 +61,8 @@ require("lazy").setup({
     'tpope/vim-fugitive',
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
-
-    { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
+    { "WhoIsSethDaniel/mason-tool-installer.nvim", },
+    { 'VonHeikemen/lsp-zero.nvim',                 branch = 'v3.x' },
     { 'neovim/nvim-lspconfig' },
     { 'hrsh7th/cmp-nvim-lsp' },
     { 'hrsh7th/nvim-cmp' },
@@ -83,4 +83,73 @@ require("lazy").setup({
             },
         }
     },
+    {
+        "stevearc/conform.nvim",
+        lazy = true,
+        event = { "BufReadPre", "BufNewFile" }, -- to disable, comment this out
+        config = function()
+            local conform = require("conform")
+
+            conform.setup({
+                formatters_by_ft = {
+                    javascript = { "prettierd" },
+                    typescript = { "prettierd" },
+                    javascriptreact = { "prettierd" },
+                    typescriptreact = { "prettierd" },
+                    svelte = { "prettierd" },
+                    css = { "prettierd" },
+                    html = { "prettierd" },
+                    json = { "prettierd" },
+                    yaml = { "prettierd" },
+                    markdown = { "prettierd" },
+                    graphql = { "prettierd" },
+                    lua = { "stylua" },
+                    python = { "isort", "black" },
+                },
+                format_on_save = {
+                    lsp_fallback = true,
+                    async = false,
+                    timeout_ms = 1000,
+                },
+            })
+
+            vim.keymap.set({ "n", "v" }, "<leader>f", function()
+                conform.format({
+                    lsp_fallback = true,
+                    async = false,
+                    timeout_ms = 1000,
+                })
+            end, { desc = "Format file or range (in visual mode)" })
+        end,
+    },
+    {
+        "mfussenegger/nvim-lint",
+        lazy = true,
+        event = { "BufReadPre", "BufNewFile" }, -- to disable, comment this out
+        config = function()
+            local lint = require("lint")
+
+            lint.linters_by_ft = {
+                javascript = { "eslint_d" },
+                typescript = { "eslint_d" },
+                javascriptreact = { "eslint_d" },
+                typescriptreact = { "eslint_d" },
+                svelte = { "eslint_d" },
+                python = { "pylint" },
+            }
+
+            local lint_augroup = vim.api.nvim_create_augroup("lint", { clear = true })
+
+            vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
+                group = lint_augroup,
+                callback = function()
+                    lint.try_lint()
+                end,
+            })
+
+            vim.keymap.set("n", "<leader>l", function()
+                lint.try_lint()
+            end, { desc = "Trigger linting for current file" })
+        end,
+    }
 })
