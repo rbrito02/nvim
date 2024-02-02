@@ -1,5 +1,6 @@
 return {
 
+	{ "hrsh7th/cmp-nvim-lsp" },
 	{ "L3MON4D3/LuaSnip" },
 	{
 		"stevearc/conform.nvim",
@@ -8,7 +9,7 @@ return {
 		keys = {
 			{
 				-- Customize or remove this keymap to your liking
-				"<leader>f",
+				"<leader>fm",
 				function()
 					require("conform").format({ async = true, lsp_fallback = true })
 				end,
@@ -23,6 +24,7 @@ return {
 				lua = { "stylua" },
 				python = { "isort", "black" },
 				javascript = { { "prettierd", "prettier" } },
+				java = { "clang-format" },
 			},
 			-- Set up format-on-save
 			format_on_save = { timeout_ms = 500, lsp_fallback = true },
@@ -44,7 +46,7 @@ return {
 		config = function()
 			-- Global mappings.
 			-- See `:help vim.diagnostic.*` for documentation on any of the below functions
-			vim.keymap.set("n", "<space>e", vim.diagnostic.open_float)
+			vim.keymap.set("n", "<space>lf", vim.diagnostic.open_float)
 			vim.keymap.set("n", "[d", vim.diagnostic.goto_prev)
 			vim.keymap.set("n", "]d", vim.diagnostic.goto_next)
 			vim.keymap.set("n", "<space>q", vim.diagnostic.setloclist)
@@ -64,7 +66,7 @@ return {
 					vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
-					vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+					vim.keymap.set("n", "<leader>ls", vim.lsp.buf.signature_help, opts)
 					vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, opts)
 					vim.keymap.set("n", "<space>wr", vim.lsp.buf.remove_workspace_folder, opts)
 					vim.keymap.set("n", "<space>wl", function()
@@ -89,6 +91,7 @@ return {
 			require("mason-lspconfig").setup({
 				-- list of servers for mason to install
 				ensure_installed = {
+					"rust_analyzer",
 					"tsserver",
 					"html",
 					"cssls",
@@ -104,6 +107,7 @@ return {
 				-- auto-install configured servers (with lspconfig)
 				automatic_installation = true, -- not the same as ensure_installed
 
+				require("lspconfig").rust_analyzer.setup({}),
 				require("lspconfig").lua_ls.setup({}),
 				require("lspconfig").tsserver.setup({}),
 				require("lspconfig").html.setup({}),
@@ -130,38 +134,6 @@ return {
 					"clang-format", -- java/c/cpp formatter
 					"eslint_d", -- js linter
 				},
-			})
-		end,
-	},
-	{
-		"hrsh7th/nvim-cmp",
-		config = function()
-			local lspconfig = require("lspconfig")
-			local cmp = require("cmp")
-			local cmp_select = {
-				behavior = cmp.SelectBehavior.Select,
-			}
-
-			cmp.setup({
-				sources = {
-					{
-						name = "path",
-					},
-					{
-						name = "nvim_lsp",
-					},
-					{
-						name = "nvim_lua",
-					},
-				},
-				mapping = cmp.mapping.preset.insert({
-					["<C-k>"] = cmp.mapping.select_prev_item(cmp_select),
-					["<C-j>"] = cmp.mapping.select_next_item(cmp_select),
-					["<Tab>"] = cmp.mapping.confirm({
-						select = true,
-					}),
-					["<C-Space>"] = cmp.mapping.complete(),
-				}),
 			})
 		end,
 	},
@@ -196,6 +168,62 @@ return {
 				lint.try_lint()
 			end, {
 				desc = "Trigger linting for current file",
+			})
+		end,
+	},
+	{
+		"hrsh7th/nvim-cmp",
+		event = "InsertEnter",
+		dependencies = {
+			"hrsh7th/cmp-buffer", -- source for text in buffer
+			"hrsh7th/cmp-path", -- source for file system paths
+			"L3MON4D3/LuaSnip", -- snippet engine
+			"saadparwaiz1/cmp_luasnip", -- for autocompletion
+			"rafamadriz/friendly-snippets", -- useful snippets
+			"onsails/lspkind.nvim", -- vs-code like pictograms
+		},
+		config = function()
+			local cmp = require("cmp")
+
+			local luasnip = require("luasnip")
+
+			local lspkind = require("lspkind")
+
+			-- loads vscode style snippets from installed plugins (e.g. friendly-snippets)
+			require("luasnip.loaders.from_vscode").lazy_load()
+
+			cmp.setup({
+				completion = {
+					completeopt = "menu,menuone,preview,noselect",
+				},
+				snippet = { -- configure how nvim-cmp interacts with snippet engine
+					expand = function(args)
+						luasnip.lsp_expand(args.body)
+					end,
+				},
+				mapping = cmp.mapping.preset.insert({
+					["<C-k>"] = cmp.mapping.select_prev_item(), -- previous suggestion
+					["<C-j>"] = cmp.mapping.select_next_item(), -- next suggestion
+					["<C-b>"] = cmp.mapping.scroll_docs(-4),
+					["<C-f>"] = cmp.mapping.scroll_docs(4),
+					["<C-Space>"] = cmp.mapping.complete(), -- show completion suggestions
+					["<C-e>"] = cmp.mapping.abort(), -- close completion window
+					["<CR>"] = cmp.mapping.confirm({ select = false }),
+				}),
+				-- sources for autocompletion
+				sources = cmp.config.sources({
+					{ name = "nvim_lsp" },
+					{ name = "luasnip" }, -- snippets
+					{ name = "buffer" }, -- text within current buffer
+					{ name = "path" }, -- file system paths
+				}),
+				-- configure lspkind for vs-code like pictograms in completion menu
+				formatting = {
+					format = lspkind.cmp_format({
+						maxwidth = 50,
+						ellipsis_char = "...",
+					}),
+				},
 			})
 		end,
 	},
