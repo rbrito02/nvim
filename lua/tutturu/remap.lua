@@ -1,10 +1,10 @@
 vim.g.mapleader = " "
-vim.keymap.set("n", "<leader>pv", ":NvimTreeToggle<cr>", {
+vim.keymap.set("n", "-", ":Oil<cr>", {
 	desc = "file explorer",
 })
-vim.keymap.set("n", "<leader>md", "<cmd>silent !open -a typora %<CR>", {
-	desc = "Open File in Typora",
-})
+-- vim.keymap.set("n", "<leader>md", "<cmd>silent !open -a typora %<CR>", {
+-- 	desc = "Open File in Typora",
+-- })
 
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", {
 	desc = "move selection down",
@@ -41,9 +41,9 @@ vim.keymap.set("n", "<leader>Y", [["+Y]])
 vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 -- This is going to get me cancelled
-vim.keymap.set("i", "<C-c>", "<Esc>")
+-- vim.keymap.set("i", "<C-c>", "<Esc>")
 
-vim.keymap.set("n", "Q", "<nop>")
+-- vim.keymap.set("n", "Q", "<nop>")
 -- vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww ~/.config/tmux/tmux-sessionizer<CR>")
 
 vim.keymap.set("n", "<C-k>", ":wincmd k<CR>")
@@ -55,17 +55,6 @@ vim.keymap.set("n", "<leader>vs", ":wincmd v<CR>")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
-vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {
-	desc = "refactor word",
-})
-vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", {
-	silent = true,
-}, {
-	desc = "compile bash script",
-})
-
-vim.keymap.set("n", "<leader><leader>", function()
-	vim.cmd("so")
-end, {
-	desc = "source file",
-})
+-- vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {
+-- 	desc = "refactor word",
+-- })
